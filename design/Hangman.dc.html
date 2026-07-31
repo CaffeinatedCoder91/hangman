@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: oklch(96% 0.015 90); }
+  @keyframes pulse { 0%,100% { opacity: 0.35; } 50% { opacity: 0.7; } }
+  @keyframes popIn { 0% { transform: scale(0.85) translateY(6px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+  a { color: oklch(78% 0.15 195); }
+  a:hover { color: oklch(85% 0.17 95); }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:oklch(96% 0.015 90);font-family:'Space Mono',monospace;color:oklch(20% 0.02 280);padding:clamp(16px,4vw,40px);box-sizing:border-box;">
+
+  <div aria-live="polite" role="status" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">{{ announcement }}</div>
+
+  <div style="max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:24px;">
+
+    <header style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;">
+      <h1 style="margin:0;font-family:'Press Start 2P',monospace;font-size:clamp(26px,6vw,42px);color:oklch(48% 0.28 300);text-shadow:3px 3px 0 oklch(68% 0.22 85 / 0.6);letter-spacing:2px;">HANGMAN</h1>
+      <p style="margin:0;font-size:13px;color:oklch(40% 0.02 280);letter-spacing:0.5px;">guess the word before the gallows wins</p>
+      <sc-if value="{{ showDevSwitcher }}" hint-placeholder-val="{{ true }}">
+        <div role="group" aria-label="Preview state (demo only)" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+          <sc-for list="{{ previewOptions }}" as="opt" hint-placeholder-count="5">
+            <button type="button" onClick="{{ opt.onClick }}" style="{{ opt.style }}" style-focus="outline:3px solid oklch(85% 0.17 95);outline-offset:2px;" aria-pressed="{{ opt.active }}">{{ opt.label }}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+    </header>
+
+    <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+      <div style="background:oklch(99% 0.005 90);border:3px solid oklch(50% 0.19 15);border-radius:8px;box-shadow:6px 6px 0 rgba(0,0,0,0.15);padding:clamp(24px,6vw,48px);display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;">
+        <div style="width:0;height:0;border-left:24px solid transparent;border-right:24px solid transparent;border-bottom:40px solid oklch(50% 0.19 15);position:relative;">
+          <span style="position:absolute;bottom:-32px;left:-4px;font-family:'Press Start 2P',monospace;font-size:14px;color:oklch(99% 0.005 90);">!</span>
+        </div>
+        <h2 style="margin:8px 0 0;font-family:'Press Start 2P',monospace;font-size:clamp(16px,3vw,20px);color:oklch(50% 0.19 15);">CONNECTION LOST</h2>
+        <p style="margin:0;color:oklch(40% 0.02 280);max-width:360px;">Couldn't fetch a new word from the server. Check your connection and try again.</p>
+        <button type="button" onClick="{{ retry }}" style="font-family:'Press Start 2P',monospace;font-size:13px;background:oklch(68% 0.22 85);color:oklch(20% 0.02 280);border:none;border-radius:6px;padding:14px 24px;cursor:pointer;box-shadow:4px 4px 0 rgba(0,0,0,0.15);" style-focus="outline:3px solid oklch(48% 0.28 300);outline-offset:3px;" style-active="transform:translate(3px,3px);box-shadow:0 0 0 rgba(0,0,0,0.15);">RETRY</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;" aria-hidden="true">
+        <div style="background:oklch(99% 0.005 90);border:3px solid oklch(55% 0.03 280);border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:16px;align-items:center;">
+          <div style="width:100%;height:160px;background:oklch(90% 0.015 90);border-radius:6px;animation:pulse 1.4s ease-in-out infinite;"></div>
+          <div style="width:60%;height:16px;background:oklch(90% 0.015 90);border-radius:4px;animation:pulse 1.4s ease-in-out infinite;"></div>
+        </div>
+        <div style="background:oklch(99% 0.005 90);border:3px solid oklch(55% 0.03 280);border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:20px;">
+          <div style="width:40%;height:16px;background:oklch(90% 0.015 90);border-radius:4px;animation:pulse 1.4s ease-in-out infinite;"></div>
+          <div style="width:100%;height:44px;background:oklch(90% 0.015 90);border-radius:4px;animation:pulse 1.4s ease-in-out infinite;"></div>
+          <div style="width:100%;height:120px;background:oklch(90% 0.015 90);border-radius:4px;animation:pulse 1.4s ease-in-out infinite;"></div>
+        </div>
+      </div>
+      <p style="text-align:center;color:oklch(40% 0.02 280);font-size:13px;margin-top:16px;">LOADING WORD...</p>
+    </sc-if>
+
+    <sc-if value="{{ showGame }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;align-items:stretch;">
+
+        <div style="background:oklch(99% 0.005 90);border:3px solid oklch(55% 0.03 280);border-radius:8px;box-shadow:6px 6px 0 rgba(0,0,0,0.12);padding:20px;display:flex;flex-direction:column;gap:16px;align-items:center;height:100%;box-sizing:border-box;justify-content:space-between;">
+          <svg viewBox="0 0 200 220" width="100%" style="max-width:220px;" role="img" aria-label="{{ hangmanAriaLabel }}">
+            <line x1="20" y1="200" x2="140" y2="200" stroke="oklch(35% 0.02 280)" stroke-width="6" stroke-linecap="round"/>
+            <line x1="50" y1="200" x2="50" y2="20" stroke="oklch(35% 0.02 280)" stroke-width="6" stroke-linecap="round"/>
+            <line x1="50" y1="20" x2="130" y2="20" stroke="oklch(35% 0.02 280)" stroke-width="6" stroke-linecap="round"/>
+            <line x1="50" y1="50" x2="75" y2="20" stroke="oklch(35% 0.02 280)" stroke-width="6" stroke-linecap="round"/>
+            <line x1="130" y1="20" x2="130" y2="45" stroke="{{ stage1Color }}" stroke-width="6" stroke-linecap="round" style="opacity:{{ stage1Opacity }}"/>
+            <circle cx="130" cy="65" r="20" fill="none" stroke="{{ stage2Color }}" stroke-width="6" style="opacity:{{ stage2Opacity }}"/>
+            <line x1="130" y1="85" x2="130" y2="140" stroke="{{ stage3Color }}" stroke-width="6" stroke-linecap="round" style="opacity:{{ stage3Opacity }}"/>
+            <g stroke="{{ stage4Color }}" stroke-width="6" stroke-linecap="round" style="opacity:{{ stage4Opacity }}">
+              <line x1="130" y1="95" x2="105" y2="120"/>
+              <line x1="130" y1="95" x2="155" y2="120"/>
+            </g>
+            <line x1="130" y1="140" x2="110" y2="175" stroke="{{ stage5Color }}" stroke-width="6" stroke-linecap="round" style="opacity:{{ stage5Opacity }}"/>
+            <line x1="130" y1="140" x2="150" y2="175" stroke="{{ stage6Color }}" stroke-width="6" stroke-linecap="round" style="opacity:{{ stage6Opacity }}"/>
+          </svg>
+          <div style="font-family:'Press Start 2P',monospace;font-size:clamp(14px,3vw,18px);color:{{ attemptsColor }};">ATTEMPTS: {{ attemptsLeft }}/6</div>
+          <div style="width:100%;">
+            <div style="font-size:11px;letter-spacing:1px;color:oklch(40% 0.02 280);margin-bottom:6px;">MISSED LETTERS</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;">
+              <sc-for list="{{ missedLetters }}" as="ml" hint-placeholder-count="0">
+                <span style="display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;padding:0 4px;background:oklch(90% 0.10 20);border:2px solid oklch(52% 0.26 20);border-radius:4px;font-weight:700;font-size:14px;color:oklch(40% 0.20 20);">{{ ml }}</span>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:oklch(99% 0.005 90);border:3px solid oklch(55% 0.03 280);border-radius:8px;box-shadow:6px 6px 0 rgba(0,0,0,0.12);padding:20px;display:flex;flex-direction:column;gap:16px;height:100%;box-sizing:border-box;">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;">
+            <span style="font-family:'Press Start 2P',monospace;font-size:11px;background:oklch(48% 0.28 300);color:oklch(99% 0.005 90);padding:6px 10px;border-radius:4px;letter-spacing:1px;">{{ category }}</span>
+            <span style="font-size:13px;color:oklch(40% 0.02 280);">{{ hintText }}</span>
+          </div>
+
+          <sc-if value="{{ bannerVisible }}" hint-placeholder-val="{{ false }}">
+            <div style="background:{{ bannerBg }};color:oklch(20% 0.02 280);border-radius:6px;padding:14px 16px;animation:popIn 0.3s ease-out;display:flex;flex-direction:column;gap:2px;">
+              <div style="font-family:'Press Start 2P',monospace;font-size:clamp(14px,3vw,18px);">{{ bannerTitle }}</div>
+              <div style="font-size:13px;">{{ bannerSubtitle }}</div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:8px 0;">
+            <span aria-hidden="true" style="display:contents;">
+              <sc-for list="{{ wordSlots }}" as="slot" hint-placeholder-count="5">
+                <span style="width:clamp(26px,7vw,42px);height:clamp(34px,9vw,48px);display:flex;align-items:center;justify-content:center;border-bottom:4px solid {{ slot.borderColor }};font-family:'Press Start 2P',monospace;font-size:clamp(16px,4vw,24px);color:{{ slot.color }};">{{ slot.display }}</span>
+              </sc-for>
+            </span>
+            <span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">{{ wordSrText }}</span>
+          </div>
+
+          <div role="group" aria-label="Letter keyboard" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:8px;">
+            <sc-for list="{{ alphabet }}" as="k" hint-placeholder-count="26">
+              <button type="button" onClick="{{ k.onClick }}" disabled="{{ k.disabled }}" aria-label="{{ k.ariaLabel }}" style="{{ k.style }}" style-focus="outline:3px solid oklch(85% 0.17 95);outline-offset:2px;" style-hover="{{ k.hoverStyle }}">{{ k.letter }}</button>
+            </sc-for>
+          </div>
+
+          <button type="button" onClick="{{ newGame }}" style="margin-top:auto;align-self:center;font-family:'Press Start 2P',monospace;font-size:13px;background:oklch(52% 0.20 200);color:oklch(99% 0.005 90);border:none;border-radius:6px;padding:14px 28px;cursor:pointer;box-shadow:4px 4px 0 rgba(0,0,0,0.15);" style-focus="outline:3px solid oklch(48% 0.28 300);outline-offset:3px;" style-active="transform:translate(3px,3px);box-shadow:0 0 0 rgba(0,0,0,0.15);">NEW GAME</button>
+        </div>
+
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:900,&quot;height&quot;:900},&quot;devStateSwitcher&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;hintTiming&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;always&quot;,&quot;tsType&quot;:&quot;'always'|'after-2-misses'&quot;,&quot;options&quot;:[&quot;always&quot;,&quot;after-2-misses&quot;]}}">
+const WORDS = [
+  { category: 'ARCADE', hint: 'Classic maze chaser haunted by ghosts', word: 'PACMAN' },
+  { category: 'SPACE', hint: 'The red planet next door', word: 'MARS' },
+  { category: 'ANIMALS', hint: 'Wears black and white stripes like a highway', word: 'ZEBRA' },
+  { category: 'MUSIC', hint: 'Six strings, one riff away from a solo', word: 'GUITAR' },
+  { category: 'WEATHER', hint: 'The loud rumble after lightning', word: 'THUNDER' },
+  { category: 'FOOD', hint: 'Italian noodles, endless shapes', word: 'PASTA' }
+];
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const COLORS = {
+  panel: 'oklch(99% 0.005 90)', raised: 'oklch(93% 0.015 90)', border: 'oklch(55% 0.03 280)',
+  textSecondary: 'oklch(40% 0.02 280)', cyan: 'oklch(52% 0.20 200)', magenta: 'oklch(52% 0.26 20)',
+  yellow: 'oklch(68% 0.22 85)', purple: 'oklch(48% 0.28 300)', ghost: 'oklch(85% 0.02 280)', dark: 'oklch(20% 0.02 280)'
+};
+
+class Component extends DCLogic {
+  state = {
+    status: 'loading', previewOverride: null,
+    word: '', category: '', hint: '', guessed: [], misses: 0, announcement: ''
+  };
+
+  componentDidMount() {
+    this.loadWord();
+    this._onKey = (e) => {
+      const eff = this.state.previewOverride || this.state.status;
+      if (eff !== 'playing') return;
+      const l = e.key.toUpperCase();
+      if (ALPHABET.includes(l)) this.guessLetter(l);
+    };
+    window.addEventListener('keydown', this._onKey);
+  }
+  componentWillUnmount() { window.removeEventListener('keydown', this._onKey); }
+
+  loadWord(forceFail) {
+    this.setState({ status: 'loading', previewOverride: null });
+    setTimeout(() => {
+      if (forceFail) { this.setState({ status: 'error', announcement: 'Failed to load a new word.' }); return; }
+      const pick = WORDS[Math.floor(Math.random() * WORDS.length)];
+      this.setState({ status: 'playing', word: pick.word, category: pick.category, hint: pick.hint, guessed: [], misses: 0, announcement: 'New game started. Category: ' + pick.category });
+    }, 700);
+  }
+
+  guessLetter(letter) {
+    const eff = this.state.previewOverride || this.state.status;
+    if (eff !== 'playing' || this.state.guessed.includes(letter)) return;
+    const guessed = [...this.state.guessed, letter];
+    const correct = this.state.word.includes(letter);
+    const misses = this.state.misses + (correct ? 0 : 1);
+    const allRevealed = this.state.word.split('').every(ch => guessed.includes(ch));
+    let status = 'playing', announcement = correct ? `Correct! ${letter} is in the word.` : `Wrong. ${letter} is not in the word. ${6 - misses} attempts left.`;
+    if (!correct && misses >= 6) { status = 'lost'; announcement = `Out of attempts. The word was ${this.state.word}.`; }
+    else if (correct && allRevealed) { status = 'won'; announcement = `You won! The word was ${this.state.word}.`; }
+    this.setState({ guessed, misses, status, announcement });
+  }
+
+  setPreview(key) { this.setState({ previewOverride: key === 'playing' ? null : key }); }
+
+  colorForMisses(n) { return n >= 5 ? COLORS.magenta : n >= 3 ? COLORS.yellow : COLORS.cyan; }
+
+  renderVals() {
+    const props = this.props || {};
+    const showDevSwitcher = props.devStateSwitcher !== false;
+    const hintTiming = props.hintTiming || 'always';
+    const eff = this.state.previewOverride || this.state.status;
+
+    let demo = null;
+    if (eff === 'won') demo = { word: 'RETRO', category: 'STYLE', hint: 'Vintage arcade aesthetic', guessed: ['R', 'E', 'T', 'O'], misses: 2 };
+    if (eff === 'lost') demo = { word: 'ARCADE', category: 'PLACES', hint: 'Where quarters buy high scores', guessed: ['A', 'C', 'D'], misses: 6 };
+
+    const word = demo ? demo.word : this.state.word;
+    const category = demo ? demo.category : this.state.category;
+    const hint = demo ? demo.hint : this.state.hint;
+    const guessed = demo ? demo.guessed : this.state.guessed;
+    const misses = demo ? demo.misses : this.state.misses;
+    const attemptsLeft = 6 - misses;
+
+    const missedLetters = ALPHABET.filter(l => guessed.includes(l) && word && !word.includes(l));
+
+    const wordSlots = word ? word.split('').map((ch, i) => {
+      const isGuessed = guessed.includes(ch);
+      const showAsLost = eff === 'lost' && !isGuessed;
+      const display = (isGuessed || eff === 'lost' || eff === 'won') ? ch : '';
+      let color = COLORS.textSecondary, borderColor = COLORS.border;
+      if (eff === 'won') { color = COLORS.cyan; borderColor = COLORS.cyan; }
+      else if (showAsLost) { color = COLORS.magenta; borderColor = COLORS.magenta; }
+      else if (isGuessed) { color = COLORS.dark; borderColor = COLORS.cyan; }
+      return { key: i, display, color, borderColor };
+    }) : [];
+    const wordSrText = word ? 'Word: ' + word.split('').map(ch => guessed.includes(ch) || eff === 'lost' || eff === 'won' ? ch : 'blank').join(', ') : '';
+
+    const stages = [1, 2, 3, 4, 5, 6].reduce((acc, n) => {
+      const drawn = misses >= n;
+      acc['stage' + n + 'Opacity'] = drawn ? 1 : 0.6;
+      acc['stage' + n + 'Color'] = drawn ? COLORS.magenta : COLORS.ghost;
+      return acc;
+    }, {});
+
+    const showHint = hintTiming === 'always' || misses >= 2 || eff !== 'playing';
+    const hintText = showHint ? hint : 'Hint unlocks after 2 wrong guesses...';
+
+    const alphabet = ALPHABET.map(letter => {
+      const isGuessed = guessed.includes(letter);
+      const correct = isGuessed && word.includes(letter);
+      const wrong = isGuessed && !word.includes(letter);
+      let bg = COLORS.raised, color = COLORS.dark, opacity = 1;
+      if (correct) { bg = 'oklch(85% 0.16 200)'; color = 'oklch(25% 0.10 200)'; }
+      if (wrong) { bg = 'transparent'; color = COLORS.textSecondary; opacity = 0.5; }
+      const disabled = isGuessed || eff !== 'playing';
+      return {
+        letter, disabled,
+        ariaLabel: `Letter ${letter}${correct ? ', correct' : wrong ? ', incorrect' : ''}`,
+        onClick: () => this.guessLetter(letter),
+        style: `height:44px;border:2px solid ${COLORS.border};border-radius:5px;background:${bg};color:${color};opacity:${opacity};font-family:'Space Mono',monospace;font-weight:700;font-size:15px;cursor:${disabled ? 'default' : 'pointer'};text-decoration:${wrong ? 'line-through' : 'none'};`,
+        hoverStyle: disabled ? '' : `background:${COLORS.border};`
+      };
+    });
+
+    const previewKeys = [['loading', 'Loading'], ['playing', 'Playing'], ['won', 'Won'], ['lost', 'Lost'], ['error', 'Error']];
+    const previewOptions = previewKeys.map(([key, label]) => {
+      const active = eff === key;
+      return {
+        label, active,
+        onClick: () => this.setPreview(key),
+        style: `font-size:11px;font-family:'Space Mono',monospace;padding:6px 10px;border-radius:12px;border:1px solid ${COLORS.border};background:${active ? COLORS.purple : 'transparent'};color:${active ? '#fff' : COLORS.textSecondary};cursor:pointer;font-weight:${active ? 700 : 400};`
+      };
+    });
+
+    let bannerVisible = false, bannerTitle = '', bannerSubtitle = '', bannerBg = COLORS.cyan;
+    if (eff === 'won') { bannerVisible = true; bannerTitle = 'YOU WIN! ★'; bannerSubtitle = `Solved it: ${word}`; bannerBg = 'oklch(80% 0.24 90)'; }
+    if (eff === 'lost') { bannerVisible = true; bannerTitle = 'GAME OVER'; bannerSubtitle = `The word was: ${word}`; bannerBg = 'oklch(78% 0.20 25)'; }
+
+    return {
+      showDevSwitcher, previewOptions,
+      isError: eff === 'error', isLoading: eff === 'loading', showGame: eff === 'playing' || eff === 'won' || eff === 'lost',
+      announcement: this.state.announcement,
+      category, hintText, wordSlots, wordSrText, missedLetters,
+      attemptsLeft, attemptsColor: this.colorForMisses(misses),
+      alphabet, newGame: () => this.loadWord(false), retry: () => this.loadWord(false),
+      bannerVisible, bannerTitle, bannerSubtitle, bannerBg,
+      hangmanAriaLabel: `Hangman drawing, ${misses} of 6 wrong guesses made`,
+      ...stages
+    };
+  }
+}
+
+</script>
+</body>
+</html>

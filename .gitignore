@@ -1,18 +1,12 @@
-node_modules/
-dist/
-build/
-coverage/
-.sst/
-.vite/
-*.log
+node_modules
+dist
+.sst
+.env
 .DS_Store
+coverage
 
-.env*
-!.env.example
-
-# Local-only bootcamp docs — deliberately untracked
-SPEC.md
-AGENTS.md
-SESSION-0-PROMPT.md
 WEEK-1-CHALLENGE.md
 LEARNING-NOTES.md
+WEEK-1-CHALLENGE - SST part.md
+SPEC.md
+AGENTS.md
