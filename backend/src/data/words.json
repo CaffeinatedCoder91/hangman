@@ -1,0 +1,10 @@
+[
+  { "id": "planet-amber", "word": "SATURN", "category": "Space", "hint": "A ringed planet" },
+  { "id": "animal-cobalt", "word": "PENGUIN", "category": "Animals", "hint": "A flightless bird dressed for dinner" },
+  { "id": "fruit-dahlia", "word": "APRICOT", "category": "Food", "hint": "A small orange stone fruit" },
+  { "id": "music-ember", "word": "TRUMPET", "category": "Music", "hint": "A bright-sounding brass instrument" },
+  { "id": "nature-fern", "word": "WATERFALL", "category": "Nature", "hint": "A river taking a vertical shortcut" },
+  { "id": "travel-garnet", "word": "PASSPORT", "category": "Travel", "hint": "A booklet used at international borders" },
+  { "id": "science-hazel", "word": "GRAVITY", "category": "Science", "hint": "The force that keeps your feet on the ground" },
+  { "id": "coding-indigo", "word": "FUNCTION", "category": "Programming", "hint": "A reusable block of behavior" }
+]
