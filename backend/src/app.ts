@@ -38,3 +38,7 @@ app.post('/api/challenges/:challengeId/guess', (request, response) => {
 //responds with the updated challenge object in JSON format
   response.json(challenge);
 });
+
+app.use((_request, response) => {
+  response.status(404).json({ error: 'Route not found' });
+});
