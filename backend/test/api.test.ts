@@ -59,6 +59,10 @@ describe("Hangman API", () => {
       .expect(404, { error: "Challenge not found" });
   });
 
+  it("returns a JSON 404 for an unknown route", async () => {
+    await request(app).get("/").expect(404, { error: "Route not found" });
+  });
+
   it("reveals the answer after six incorrect guesses", async () => {
     const response = await request(app)
       .post("/api/challenges/planet-amber/guess")
