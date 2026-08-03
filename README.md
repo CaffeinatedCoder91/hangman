@@ -61,32 +61,31 @@ SST creates and manages the Lambda, API Gateway HTTP API, S3 bucket, CloudFront 
 
 ## Staging deployment
 
-With suitable local AWS credentials:
+With the temporary `hangman-deployer` AWS profile selected in your terminal:
 
 ```sh
+export AWS_PROFILE=hangman-deployer
 npm run check
 npm run deploy:staging
 ```
 
-SST prints the API and website URLs. The frontend build receives the deployed API URL as `VITE_API_URL`.
-
-## GitHub OIDC setup
-
-No long-lived AWS access keys are needed or expected.
-
-1. In AWS IAM, add the GitHub Actions OIDC provider `token.actions.githubusercontent.com` with audience `sts.amazonaws.com` if the account does not already have it.
-2. Create an IAM deployment role with a trust policy restricted to this repository. Use a subject such as `repo:OWNER/REPOSITORY:ref:refs/heads/main`; avoid trusting every repository or branch.
-3. Attach permissions sufficient for SST's bootstrap and the resources in `sst.config.ts`. Start from SST's documented deploy permissions and narrow them after observing actual usage.
-4. In the GitHub repository, create an Actions **variable** named `AWS_DEPLOY_ROLE_ARN` containing that role's ARN. It is an identifier, not an access key.
-5. Protect `main`, require the `check` job, and restrict who can modify workflows.
-
-The workflow grants `id-token: write` only to the deploy job. `aws-actions/configure-aws-credentials` exchanges the GitHub identity token for temporary AWS credentials.
+SST uses the credentials active in your terminal and prints the API and website
+URLs. It passes the API URL to the frontend build as `VITE_API_URL`. The
+`staging` stage creates resources separate from `production`.
 
 ## Production flow
 
-Pull requests run `npm ci`, `npx sst install`, and `npm run check`. A push to `main` repeats those checks, assumes the AWS deployment role through OIDC, and runs `sst deploy --stage production`. Production resources are protected and retained by default.
+After verifying staging, deploy the independent production stage from your
+authenticated terminal:
 
-The fresh-runner `npx sst install` step generates `.sst/platform/config.d.ts` before typechecking the SST configuration.
+```sh
+npm run check
+npm run deploy:production
+```
+
+Production resources are protected and retained by default. This learning
+setup uses manual deployments only; it does not configure GitHub Actions or
+GitHub OIDC deployment access.
 
 ## Cleanup
 
@@ -97,6 +96,14 @@ npm run remove:staging
 ```
 
 Production is protected. If removal is genuinely intended, first change the production `protect` and `removal` settings in `sst.config.ts`, deploy that configuration, and then run `npm run remove:production`. Check the AWS consoles afterward for retained data or bootstrap resources before closing an account.
+
+## Environment files
+
+Copy `.env.example` to `.env.local` only if a local frontend build must target
+a separately hosted API. Do not put credentials or secrets in a Vite
+environment file: values prefixed with `VITE_` are included in the browser
+bundle. The normal `npm run dev` flow leaves this unset and uses Vite's local
+proxy instead.
 
 ## Deliberate limitations
 
