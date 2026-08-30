@@ -17,7 +17,10 @@ const GameBoard = ({ game, onGuess, onNewGame }: GameBoardProps) => {
       <div><MissedHeading>MISSED LETTERS</MissedHeading><MissedChips>{game.missedLetters.map((letter) => <MissedChip key={letter}>{letter}</MissedChip>)}</MissedChips></div>
     </SidePanel>
     <Card>
-      <PanelMeta><Category>{game.category.toUpperCase()}</Category><Hint>{game.hint}</Hint></PanelMeta>
+      <PanelMeta>
+        <Category>{game.category.toUpperCase()}</Category>
+        {misses >= 2 && <Hint>{game.hint}</Hint>}
+      </PanelMeta>
       {game.status === 'won' && <Banner $status="won"><strong>YOU WIN! ★</strong><span>Solved it: {game.answer}</span></Banner>}
       {game.status === 'lost' && <Banner $status="lost"><strong>GAME OVER</strong><span>The word was: {game.answer}</span></Banner>}
       <WordDisplay game={game} />

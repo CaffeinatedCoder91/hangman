@@ -25,7 +25,8 @@ it('loads a challenge and sends complete uppercase guesses from the physical key
 
   expect(screen.getByText('LOADING WORD...')).toBeInTheDocument();
   await act(async () => { await vi.advanceTimersByTimeAsync(700); });
-  expect(screen.getByText('A ringed planet')).toBeInTheDocument();
+  expect(screen.getByText('SPACE')).toBeInTheDocument();
+  expect(screen.queryByText('A ringed planet')).not.toBeInTheDocument();
 
   fireEvent.keyDown(window, { key: 's' });
   await act(async () => {});
@@ -42,5 +43,5 @@ it('shows the connection error and can retry', async () => {
   expect(screen.getByRole('heading', { name: 'CONNECTION LOST' })).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'RETRY' }));
   await act(async () => { await vi.advanceTimersByTimeAsync(700); });
-  expect(screen.getByText('A ringed planet')).toBeInTheDocument();
+  expect(screen.getByText('SPACE')).toBeInTheDocument();
 });

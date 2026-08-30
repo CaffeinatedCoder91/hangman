@@ -8,10 +8,12 @@ const game: Challenge = {
   guessedLetters: ['S', 'X'], missedLetters: ['X'], status: 'playing',
 };
 
-it('shows the hint immediately and starts a new game', () => {
+it('conceals the hint until two misses and starts a new game', () => {
   const onNewGame = vi.fn();
-  render(<GameBoard game={game} onGuess={vi.fn()} onNewGame={onNewGame} />);
+  const { rerender } = render(<GameBoard game={game} onGuess={vi.fn()} onNewGame={onNewGame} />);
 
+  expect(screen.queryByText('A ringed planet')).not.toBeInTheDocument();
+  rerender(<GameBoard game={{ ...game, guessedLetters: ['S', 'X', 'Y'], missedLetters: ['X', 'Y'], attemptsRemaining: 4 }} onGuess={vi.fn()} onNewGame={onNewGame} />);
   expect(screen.getByText('A ringed planet')).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Letter X, incorrect' })).toBeDisabled();
   fireEvent.click(screen.getByRole('button', { name: 'NEW GAME' }));
