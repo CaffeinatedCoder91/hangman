@@ -5,5 +5,5 @@ import PageHeader from './PageHeader';
 it('provides the game title and instructions', () => {
   render(<PageHeader />);
   expect(screen.getByRole('heading', { name: 'HANGMAN' })).toBeInTheDocument();
-  expect(screen.getByText('guess the word before the gallows wins')).toBeInTheDocument();
+  expect(screen.getByText('guess the word before the gallows wins!')).toBeInTheDocument();
 });
