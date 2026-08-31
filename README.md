@@ -16,6 +16,7 @@ There is no database or server-side game session. A challenge ID is a non-secret
 - `backend/src/lambda.ts` and `backend/src/server.ts` — AWS Lambda and local entry points.
 - `frontend/src/App.tsx` — the single accessible React page.
 - `sst.config.ts` — API Gateway, Lambda, S3, and CloudFront infrastructure.
+- `infrastructure/README.md` — commented parallel Terraform migration and learning walkthrough.
 - `.github/workflows/ci.yml` — pull-request checks and main-branch deployment.
 
 ## Local development
@@ -37,6 +38,15 @@ npm run check
 
 It runs the test suites, strict TypeScript checks for the backend, frontend,
 and SST configuration, and the production Vite build.
+
+## Terraform learning migration
+
+The repository also contains a parallel Terraform implementation under
+`infrastructure/`. It creates an isolated `terraform-test` environment and does
+not import, update, or replace the resources currently managed by SST. Start
+with [`infrastructure/README.md`](infrastructure/README.md); it explains remote
+state, planning, applying, frontend publishing, CI authentication, and safe
+removal step by step.
 
 ## API routes
 
