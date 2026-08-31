@@ -8,6 +8,19 @@ sst-env.d.ts
 .DS_Store
 coverage
 
+# Terraform downloads providers into .terraform and can produce local state,
+# plans, and crash logs. State can contain infrastructure details, so none of
+# these files belong in Git. The dependency lock file is intentionally tracked.
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+
+# Reproducible deployment artifacts generated from source code.
+.build/
+
 WEEK-1-CHALLENGE.md
 LEARNING-NOTES.md
 WEEK-1-CHALLENGE - SST part.md
