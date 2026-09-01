@@ -2,7 +2,7 @@ data "aws_caller_identity" "current" {}
 
 locals {
   # One prefix makes the relationship between generated AWS resources visible
-  # in the console while keeping the Terraform test stage separate from SST.
+  # in the console while keeping each Terraform stage separate.
   name = "${var.project_name}-${var.stage}"
 }
 

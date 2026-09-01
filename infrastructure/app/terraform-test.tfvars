@@ -1,2 +1,2 @@
-# This stage exists beside SST and is safe to remove after learning/testing.
+# This isolated stage is safe to remove after learning and validation.
 stage = "terraform-test"

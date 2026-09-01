@@ -15,13 +15,9 @@
     "test": "npm run test:backend && npm run test:frontend",
     "test:backend": "vitest run --config backend/vitest.config.ts",
     "test:frontend": "vitest run --config frontend/vitest.config.ts",
-    "typecheck": "tsc --noEmit -p backend/tsconfig.json && tsc --noEmit -p frontend/tsconfig.json && tsc --noEmit -p tsconfig.sst.json",
+    "typecheck": "tsc --noEmit -p backend/tsconfig.json && tsc --noEmit -p frontend/tsconfig.json",
     "build": "vite build --config frontend/vite.config.ts",
-    "check": "npm run test && npm run typecheck && npm run build:lambda && npm run test:lambda-bundle && npm run build",
-    "deploy:staging": "sst deploy --stage staging",
-    "deploy:production": "sst deploy --stage production",
-    "remove:staging": "sst remove --stage staging",
-    "remove:production": "sst remove --stage production"
+    "check": "npm run test && npm run typecheck && npm run build:lambda && npm run test:lambda-bundle && npm run build"
   },
   "dependencies": {
     "@codegenie/serverless-express": "^4.17.0",
@@ -46,7 +42,6 @@
     "concurrently": "^9.2.0",
     "esbuild": "~0.28.0",
     "jsdom": "^26.1.0",
-    "sst": "^4.17.1",
     "supertest": "^7.1.3",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",

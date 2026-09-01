@@ -1,8 +1,8 @@
-# Terraform learning deployment
+# Terraform deployment
 
-This directory recreates the existing SST architecture in Terraform without
-touching the SST-managed resources. It deliberately uses a separate
-`terraform-test` stage first.
+This directory is the source of truth for Hangman's AWS infrastructure. The
+isolated `terraform-test` stage is available for learning and validation before
+making changes to staging.
 
 ## Mental model
 
@@ -141,5 +141,6 @@ AWS_PROFILE=hangman-deployer terraform -chdir=infrastructure/app destroy \
   -var-file=terraform-test.tfvars
 ```
 
-Do not remove SST staging until the Terraform staging deployment has passed all
-smoke tests. Do not attempt to destroy the shared bootstrap bucket.
+Do not attempt to destroy the shared bootstrap bucket. Resources created by a
+previous infrastructure system are not recorded in Terraform state and require
+a separate, deliberate ownership and cleanup review.
