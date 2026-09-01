@@ -18,5 +18,4 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx sst install
       - run: npm run check
