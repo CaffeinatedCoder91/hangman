@@ -70,6 +70,9 @@ AWS_PROFILE=hangman-deployer terraform -chdir=infrastructure/app init \
 ## 3. Build, plan, and apply infrastructure
 
 The Lambda ZIP must exist before Terraform can calculate its content hash.
+The bundle uses CommonJS because `@codegenie/serverless-express` dynamically
+loads Node built-ins with `require`; packaging that dependency as pure ESM would
+make Lambda fail during initialization before Express receives a request.
 
 ```bash
 npm run check
